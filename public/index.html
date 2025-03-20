@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tesla Fleet Control</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1>Vehicle Control Panel</h1>
+        <button class="btn btn-primary mt-3" onclick="authenticate()">Connect Tesla Account</button>
+        <button class="btn btn-secondary mt-3" onclick="refreshToken()">Refresh Token</button>
+        <button class="btn btn-danger mt-3" onclick="logout()">Logout</button>
+        <div id="vehicle-status" class="mt-4"></div>
+      </div>
+    </div>
+    <div class="row mt-5">
+      <div class="col-md-12 text-center">
+        <h2>Vehicle Status</h2>
+        <div id="vehicle-info" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function authenticate() {
+      window.location.href = '/auth';
+    }
+
+    async function refreshToken() {
+      try {
+        const response = await fetch('/auth/refresh', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          alert('Token refreshed successfully');
+          console.log('New access token:', data.access_token);
+        } else {
+          alert('Failed to refresh token');
+        }
+      } catch (error) {
+        console.error('Error refreshing token:', error);
+      }
+    }
+
+    async function logout() {
+      try {
+        const response = await fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        if (response.ok) {
+          alert('Logged out successfully');
+        } else {
+          alert('Failed to log out');
+        }
+      } catch (error) {
+        console.error('Error logging out:', error);
+      }
+    }
+
+    // Example function to display vehicle status
+    function displayVehicleStatus(status) {
+      const vehicleStatusDiv = document.getElementById('vehicle-status');
+      vehicleStatusDiv.innerHTML = `
+        <div class="alert alert-info" role="alert">
+          ${status}
+        </div>
+      `;
+    }
+
+    // Example function to display vehicle info
+    function displayVehicleInfo(info) {
+      const vehicleInfoDiv = document.getElementById('vehicle-info');
+      vehicleInfoDiv.innerHTML = `
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Vehicle Info</h5>
+            <p class="card-text">${info}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Example usage
+    displayVehicleStatus('Vehicle is online');
+    displayVehicleInfo('Model S, Battery: 80%');
+  </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
