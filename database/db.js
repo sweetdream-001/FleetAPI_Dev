@@ -1,8 +1,9 @@
-const mysql = require('mysql');
-const util = require('util');
-
+import { createPool } from 'mysql';
+import { promisify } from 'util';
+import dotenv from 'dotenv';
+dotenv.config();
 // Create a connection pool
-const pool = mysql.createPool({
+const pool = createPool({
   connectionLimit: 10,
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -11,7 +12,7 @@ const pool = mysql.createPool({
 });
 
 // Promisify the query function for easier async/await usage
-pool.query = util.promisify(pool.query);
+pool.query = promisify(pool.query);
 
 // Create the tokens table if it doesn't exist
 const createTokensTable = `
@@ -39,7 +40,68 @@ async function saveRefreshToken(userId, refreshToken, expiresAt) {
   );
 }
 
-module.exports = {
+// Function to update refresh token in the database
+async function updateRefreshToken(userId, refreshToken, expiresAt) {
+  await pool.query(
+    'UPDATE tokens SET refresh_token = ?, expires_at = ? WHERE user_id = ?',
+    [refreshToken, expiresAt, userId]
+  );
+}
+
+// Function to retrieve refresh token from the database
+async function getRefreshToken(userId) {
+  try {
+    const [result] = await pool.query(
+      'SELECT refresh_token, expires_at FROM tokens WHERE user_id = ?',
+      [userId]
+    );
+    return result ? { refreshToken: result.refresh_token, expiresAt: result.expires_at } : null;
+  } catch (error) {
+    console.error('Error retrieving refresh token:', error);
+    throw error;
+  }
+}
+
+
+//Vehicle
+
+const createVehiclesTable = `
+  CREATE TABLE IF NOT EXISTS vehicles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    vin VARCHAR(255) NOT NULL UNIQUE,
+    should_sign BOOLEAN DEFAULT FALSE,
+    version VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`;
+
+pool.query(createVehiclesTable, (err) => {
+  if (err) {
+    console.error('Error creating vehicles table:', err);
+  } else {
+    console.log('Vehicles table created or already exists.');
+  }
+});
+
+// Insert or update vehicle info
+async function saveVehicle(vin, shouldSign, version) {
+  await pool.query(
+    'INSERT INTO vehicles (vin, should_sign, version) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE should_sign = VALUES(should_sign), version = VALUES(version)',
+    [vin, shouldSign, version]
+  );
+}
+
+// Get vehicle info by VIN
+async function getVehicle(vin) {
+  const [rows] = await pool.query('SELECT * FROM vehicles WHERE vin = ?', [vin]);
+  return rows[0];
+}
+
+export default {
   pool,
-  saveRefreshToken
+  saveRefreshToken,
+  getRefreshToken,
+  updateRefreshToken,
+  saveVehicle,
+  getVehicle,
 };

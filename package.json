@@ -7,17 +7,24 @@
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
+  "type": "module",
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "axios": "^1.8.4",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "fs": "^0.0.1-security",
+    "jose": "^6.0.10",
     "jsonwebtoken": "^9.0.2",
     "mysql": "^2.18.1",
-    "util": "^0.12.5"
+    "path": "^0.12.7",
+    "util": "^0.12.5",
+    "webcrypto": "^0.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

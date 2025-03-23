@@ -1,95 +1,116 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Tesla Fleet Control</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-  <div class="container mt-5">
-    <div class="row">
-      <div class="col-md-12 text-center">
-        <h1>Vehicle Control Panel</h1>
-        <button class="btn btn-primary mt-3" onclick="authenticate()">Connect Tesla Account</button>
-        <button class="btn btn-secondary mt-3" onclick="refreshToken()">Refresh Token</button>
-        <button class="btn btn-danger mt-3" onclick="logout()">Logout</button>
-        <div id="vehicle-status" class="mt-4"></div>
-      </div>
-    </div>
-    <div class="row mt-5">
-      <div class="col-md-12 text-center">
-        <h2>Vehicle Status</h2>
-        <div id="vehicle-info" class="mt-3"></div>
-      </div>
-    </div>
-  </div>
-  <script>
-    function authenticate() {
-      window.location.href = '/auth';
-    }
+  <head>
+    <title>Tesla Fleet Control</title>
+    <!-- Add favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://cdn.iconscout.com/icon/free/png-256/free-tesla-logo-icon-download-in-svg-png-gif-file-formats--technology-social-media-company-vol-7-pack-logos-icons-3030326.png?f=webp&w=256"
+    />
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="./style.css" rel="stylesheet" />
+    <style></style>
+  </head>
+  <body class="bg-light">
+    <!-- Banner Section -->
+    <div class="header-banner">
+      <div class="header-overlay">
+        <div class="header-text text-center">
+          <!-- Authentication Button -->
 
-    async function refreshToken() {
-      try {
-        const response = await fetch('/auth/refresh', {
-          method: 'POST',
-          credentials: 'include'
-        });
-        if (response.ok) {
-          const data = await response.json();
-          alert('Token refreshed successfully');
-          console.log('New access token:', data.access_token);
-        } else {
-          alert('Failed to refresh token');
-        }
-      } catch (error) {
-        console.error('Error refreshing token:', error);
-      }
-    }
-
-    async function logout() {
-      try {
-        const response = await fetch('/auth/logout', {
-          method: 'POST',
-          credentials: 'include'
-        });
-        if (response.ok) {
-          alert('Logged out successfully');
-        } else {
-          alert('Failed to log out');
-        }
-      } catch (error) {
-        console.error('Error logging out:', error);
-      }
-    }
-
-    // Example function to display vehicle status
-    function displayVehicleStatus(status) {
-      const vehicleStatusDiv = document.getElementById('vehicle-status');
-      vehicleStatusDiv.innerHTML = `
-        <div class="alert alert-info" role="alert">
-          ${status}
+          <button class="btn tesla-connect-btn" onclick="authenticate()">
+            <span class="connect-text">Connect Tesla Account</span>
+          </button>
         </div>
-      `;
-    }
+      </div>
+    </div>
 
-    // Example function to display vehicle info
-    function displayVehicleInfo(info) {
-      const vehicleInfoDiv = document.getElementById('vehicle-info');
-      vehicleInfoDiv.innerHTML = `
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Vehicle Info</h5>
-            <p class="card-text">${info}</p>
+    <div class="container">
+      <!-- Alert Component -->
+      <div
+        id="success-alert"
+        class="alert alert-success alert-dismissible fade show"
+        style="display: none"
+        role="alert"
+      >
+        <span id="alert-message"></span>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Main Content -->
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <!-- Authenticated UI -->
+          <div id="auth-ui" style="display: none">
+            <!-- Account Controls -->
+            <!-- Account Controls -->
+            <div class="account-section">
+              <div class="control-card">
+                <div class="btn-group">
+                  <button class="btn btn-secondary" onclick="refreshToken()">
+                    <i class="fas fa-sync mr-2"></i>Refresh Token
+                  </button>
+                  <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vehicle Controls -->
+            <div class="control-card">
+              <h4 class="mb-4">Vehicle Controls</h4>
+              <div class="btn-group-vertical d-flex">
+                <div class="btn-group">
+                  <button class="btn btn-primary" onclick="pairKey()">
+                    <i class="fas fa-key mr-2"></i>Pair Now
+                  </button>
+                  <button class="btn btn-warning" onclick="sendTrunkCommand()">
+                    <i class="fas fa-car mr-2"></i>Open Front Trunk
+                  </button>
+                  <button class="btn btn-info" onclick="configureTelemetry()">
+                    <i class="fas fa-satellite-dish mr-2"></i>Enable Telemetry
+                  </button>
+                </div>
+              </div>
+              <div id="command-result" class="mt-3 text-center"></div>
+            </div>
+
+            <!-- Status Section -->
+            <div class="status-section">
+              <h2 class="mb-4">Vehicle Status</h2>
+              <div id="vehicle-info" class="table-responsive mb-4"></div>
+              <div class="text-center">
+                <button
+                  class="btn btn-info btn-lg"
+                  onclick="fetchFleetStatus()"
+                >
+                  <i class="fas fa-cars mr-2"></i>Get Fleet Status
+                </button>
+              </div>
+              <div id="fleet-status" class="mt-4"></div>
+            </div>
           </div>
         </div>
-      `;
-    }
+      </div>
+    </div>
 
-    // Example usage
-    displayVehicleStatus('Vehicle is online');
-    displayVehicleInfo('Model S, Battery: 80%');
-  </script>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
+    <!-- Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+    <script src="./scripts.js"></script>
+  </body>
 </html>

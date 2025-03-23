@@ -1,8 +1,9 @@
 # Node.js
 node_modules/
+utils/keys/private-key.*
 npm-debug.log
 yarn-error.log
 dist/
 build/
 *.env         # Ignore environment configuration files
-.DS_Store     # Ignore macOS system files
+.DS_Store     # Ignore macOS system fileskeys/private-key.*

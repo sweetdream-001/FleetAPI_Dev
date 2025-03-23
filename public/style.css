@@ -1,0 +1,269 @@
+/* Banner styles */
+.header-banner {
+  height: 400px;
+  background-image: url('https://freight.cargo.site/w/5100/q/75/i/894dcaad6d4cc50464c7cf7e030c263c4ee2f319b391b16a03a88e63f6fe1856/tesla1.jpg');
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.header-overlay {
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-text h1 {
+  color: white;
+  font-size: 4rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Container positioning */
+.container {
+  position: relative;
+}
+
+/* Account Management positioning */
+.account-section {
+  position: absolute;
+  top: -60px; /* Positions it right under the banner */
+  right: 0;
+  z-index: 100;
+  width: auto;
+  min-width: 300px;
+}
+
+.account-section .control-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  margin-bottom: 0;
+  padding: 1rem;
+}
+
+.account-section .btn-group {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.account-section h4 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem !important;
+}
+
+/* Card styles */
+.control-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.control-card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+/* Tesla Connect Button styles */
+/* .header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 2rem;
+}
+
+.auth-button-container {
+  margin-top: 2rem;
+}
+
+.tesla-connect-btn {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-image: url('https://images.stockcake.com/public/c/8/7/c876c427-9b4a-4687-9dc8-20a8a21e3afc_medium/glowing-tesla-emblem-stockcake.jpg');
+  background-size: cover;
+  background-position: center;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.tesla-connect-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.connect-text {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.tesla-connect-btn:hover .connect-text {
+  opacity: 1;
+} */
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 2rem;
+}
+
+.auth-button-container {
+  margin-top: 2rem;
+}
+
+.tesla-connect-btn {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-image: url('https://images.stockcake.com/public/c/8/7/c876c427-9b4a-4687-9dc8-20a8a21e3afc_medium/glowing-tesla-emblem-stockcake.jpg');
+  background-size: cover;
+  background-position: center;
+  border: 8px solid white;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.tesla-connect-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.connect-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  width: 100%;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 0;
+}
+
+.tesla-connect-btn:hover .connect-text {
+  opacity: 1;
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tesla-connect-btn {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .connect-text {
+    font-size: 1.2rem;
+  }
+}
+/* Button styles */
+.btn-group-vertical > .btn,
+.btn-group > .btn {
+  margin: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Status section styles */
+.status-section {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+#vehicle-info {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.table-responsive {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Alert styles */
+.alert {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-text h1 {
+    font-size: 2.5rem;
+  }
+  
+  .account-section {
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .account-section .btn-group {
+    flex-direction: column;
+  }
+  
+  .account-section .btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+}
+
+/* Animation effects */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.control-card {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Table styles */
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-top: none;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Font Awesome icon adjustments */
+.fas {
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
