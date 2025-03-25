@@ -1,3 +1,7 @@
+/**
+ * sessionCache.js file
+ * Path: ~/FleetAPI_Dev/utils/
+ */
 const sessionCache = new Map();
 
 function setSession(vin, token, expiresInSeconds = 900) {

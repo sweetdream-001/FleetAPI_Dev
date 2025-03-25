@@ -1,3 +1,7 @@
+/**
+ *  checkTokenMiddleware.js
+ *  Path: ~/FleetAPI_Dev/middleware
+ */
 import tokenStore from "../utils/tokenStore.js";
 import db from "../database/db.js";
 import axios from "axios";

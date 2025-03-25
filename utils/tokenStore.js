@@ -1,3 +1,8 @@
+/**
+ * tokenStore.js file
+ * Path: ~/FleetAPI_Dev/utils/
+ */
+
 const accessTokenStore = {};
 
 function getToken(userId) {
@@ -7,7 +12,7 @@ function getToken(userId) {
 function setToken(userId, accessToken, expiresInSeconds) {
   accessTokenStore[userId] = {
     access_token: accessToken,
-    expires_at: Date.now() + expiresInSeconds * 1000
+    expires_at: Date.now() + expiresInSeconds * 1000,
   };
 }
 

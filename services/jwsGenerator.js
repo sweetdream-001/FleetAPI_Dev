@@ -1,47 +1,53 @@
-import { SignJWT } from 'jose/jwt/sign';
-import  crypto from 'crypto';
-import { webcrypto } from 'crypto';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-globalThis.crypto = webcrypto;
+/**
+ *    jwsGenerator.js
+ *    ~/FleetAPI_Dev/services/
+ */
+import jwt from "jsonwebtoken";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { v4 as uuidv4 } from "uuid";
 
 // Load private and public keys
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export async function generateJWSToken(vin, host, command) {
+export async function generateJWSToken(token, fields) {
   // 1. Load private key
-  const privateKeyPath = path.join(__dirname, './keys/private-key.pem');
-  const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
+  const privateKeyPath = path.join(__dirname, "./keys/private-key.pem");
+  const privateKey = fs.readFileSync(privateKeyPath, "utf8");
+
+  const caPath = path.join(__dirname, "./keys/tls-cert.pem");
+  const ca = fs.readFileSync(caPath, "utf8");
+
+  const host = process.env.DOMAIN;
+  const decoded = jwt.decode(token);
 
   // 2. Create JWS header
   const header = {
-    alg: 'ES256', // ECDSA using P-256 and SHA-256
-    typ: 'JWT'
+    alg: "ES256", // ECDSA using P-256 and SHA-256
+    typ: "JWT",
+    kid: "qDssh3aSWG2ONXM7K31VWEUEnA4",
   };
-  
+
   // 3. Create payload (configuration)
   const payload = {
-    vins: [vin],
-    config: {
-      host, // Your Fleet Telemetry server domain (e.g., "your-domain.com")
-      port: 443,
-      command // Fields to stream (e.g., ["vehicle_speed", "battery_level"])
-    },
-    exp: Math.floor(Date.now() / 1000) + 3600 // Expires in 1 hour
+    port: 443,
+    ca: ca,
+    hostname: host,
+    fields: fields,
+    iss: "aHR0cHM6Ly9hdXRoLnRlc2xhLmNvbS9vYXV0aDIvdjMvbnRz",
+    sub: decoded.sub,
+    aud: "com.tesla.fleet.TelemetryClient",
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 300,
+    jti: uuidv4(),
   };
 
-  // 4. Sign the token
-  const ecPrivateKey = crypto.createPrivateKey({
-    key: privateKey,
-    format: 'pem',
-    type: 'sec1' // Required for EC private keys
+  const jwtToken = jwt.sign(payload, privateKey, {
+    algorithm: "ES256",
+    header: header,
   });
 
-  const jwt = await new SignJWT(payload)
-    .setProtectedHeader(header)
-    .sign(ecPrivateKey);
-
-  return jwt;
+  return jwtToken;
 }

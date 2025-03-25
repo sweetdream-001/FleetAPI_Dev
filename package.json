@@ -22,8 +22,11 @@
     "jose": "^6.0.10",
     "jsonwebtoken": "^9.0.2",
     "mysql": "^2.18.1",
+    "node-fetch": "^3.3.2",
     "path": "^0.12.7",
+    "protobufjs": "^7.4.0",
     "util": "^0.12.5",
+    "uuid": "^11.1.0",
     "webcrypto": "^0.1.1"
   },
   "devDependencies": {

@@ -1,3 +1,7 @@
+/**
+ *  scripts.js
+ *  Path: ~/FleetAPI_Dev/public
+ */
 // Alert handling functions
 function showAlert(message, type = "success") {
   const alertElement = document.getElementById("success-alert");
@@ -140,46 +144,62 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Required authentication functions not found");
   }
 });
-async function sendTrunkCommand() {
+
+async function sendVehicleCommand(command) {
   try {
-    const vin = await getFirstVehicleVIN(); // Helper you'll add
-    const response = await fetch("/api/telemetry/sendsigncommand", {
+    const vin = await getFirstVehicleVIN();
+    const response = await fetch("/api/vehicle/commands", {
       method: "POST",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ vin }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        vin: vin,
+        command: command,
+        parameters: {},
+      }),
     });
 
-    const data = await response.json();
-    document.getElementById("command-result").innerText = JSON.stringify(
-      data,
-      null,
-      2
-    );
-  } catch (err) {
-    console.error("Command error:", err);
-    alert("Command failed");
+    const result = await response.json();
+    showToast(`Command ${command} executed successfully`);
+  } catch (error) {
+    console.error("Error sending command:", error);
+    showToast(`Failed to execute command: ${command}`, "error");
   }
 }
 
+// Update getFirstVehicleVIN to use toast instead of prompt
 async function getFirstVehicleVIN() {
-  const res = await fetch("/api/vehicles", { credentials: "include" });
-  const data = await res.json();
-  return data[0]?.vin || prompt("No vehicle detected. Enter VIN manually:");
+  try {
+    const res = await fetch("/api/vehicles", { credentials: "include" });
+    const data = await res.json();
+    if (!data[0]?.vin) {
+      showToast("No vehicle detected", "error");
+      throw new Error("No vehicle detected");
+    }
+    return data[0].vin;
+  } catch (error) {
+    showToast("Error fetching vehicle VIN", "error");
+    throw error;
+  }
 }
 
+// Update configureTelemetry to use toast
 async function configureTelemetry() {
-  const vin = await getFirstVehicleVIN();
-  const res = await fetch("/api/telemetry/configure", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ vin }),
-  });
-  const data = await res.json();
-  alert(JSON.stringify(data, null, 2));
+  try {
+    const vin = await getFirstVehicleVIN();
+    const res = await fetch("/api/telemetry/configure", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vin }),
+    });
+    const data = await res.json();
+    console.log("Telemetry configuration response:", data);
+    showToast("Telemetry configured successfully");
+  } catch (error) {
+    console.error("Error configuring telemetry:", error);
+    showToast("Failed to configure telemetry", "error");
+  }
 }
 
 //
@@ -261,4 +281,19 @@ async function fetchFleetStatus() {
       "fleet-status"
     ).innerHTML = `<p class="text-danger">Failed to fetch fleet status.</p>`;
   }
+}
+
+// Replace showAlert function with showToast
+function showToast(message, type = "success") {
+  const backgroundColor = type === "success" ? "#28a745" : "#dc3545";
+
+  Toastify({
+    text: message,
+    duration: 3000,
+    gravity: "bottom",
+    position: "right",
+    backgroundColor: backgroundColor,
+    stopOnFocus: true,
+    close: true,
+  }).showToast();
 }

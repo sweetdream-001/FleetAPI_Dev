@@ -1,3 +1,7 @@
+<!-- /**
+ *  index.html
+ *  Path: ~/FleetAPI_Dev/public
+ */ -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -11,6 +15,11 @@
     <link
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
     />
     <link href="./style.css" rel="stylesheet" />
     <style></style>
@@ -67,24 +76,70 @@
                 </div>
               </div>
             </div>
+            <div class="row justify-content-center">
+              <div class="col-lg-4">
+                <!-- Vehicle Controls -->
+                <div class="control-card">
+                  <h4 class="mb-4">Vehicle Configurations</h4>
+                  <div class="btn-group-vertical d-flex">
+                    <div class="btn-group">
+                      <button class="btn btn-primary" onclick="pairKey()">
+                        <i class="fas fa-key mr-2"></i>KeyPair
+                      </button>
 
-            <!-- Vehicle Controls -->
-            <div class="control-card">
-              <h4 class="mb-4">Vehicle Controls</h4>
-              <div class="btn-group-vertical d-flex">
-                <div class="btn-group">
-                  <button class="btn btn-primary" onclick="pairKey()">
-                    <i class="fas fa-key mr-2"></i>Pair Now
-                  </button>
-                  <button class="btn btn-warning" onclick="sendTrunkCommand()">
-                    <i class="fas fa-car mr-2"></i>Open Front Trunk
-                  </button>
-                  <button class="btn btn-info" onclick="configureTelemetry()">
-                    <i class="fas fa-satellite-dish mr-2"></i>Enable Telemetry
-                  </button>
+                      <button
+                        class="btn btn-info"
+                        onclick="configureTelemetry()"
+                      >
+                        <i class="fas fa-satellite-dish mr-2"></i>Enable
+                        Telemetry
+                      </button>
+                    </div>
+                  </div>
+                  <div id="command-result" class="mt-3 text-center"></div>
                 </div>
               </div>
-              <div id="command-result" class="mt-3 text-center"></div>
+              <div class="col-lg-8">
+                <!-- Vehicle Controls -->
+                <div class="control-card">
+                  <h4 class="mb-4">Vehicle Controls</h4>
+                  <div class="btn-group-vertical d-flex">
+                    <div class="btn-group">
+                      <button
+                        class="btn btn-primary"
+                        value="door_lock"
+                        onclick="sendVehicleCommand(this.value)"
+                      >
+                        Lock Doors
+                      </button>
+
+                      <button
+                        class="btn btn-secondary"
+                        value="door_unlock"
+                        onclick="sendVehicleCommand(this.value)"
+                      >
+                        Unlock Doors
+                      </button>
+                      <button
+                        class="btn btn-success"
+                        value="flash_lights"
+                        onclick="sendVehicleCommand(this.value)"
+                      >
+                        Flash Lights
+                      </button>
+
+                      <button
+                        class="btn btn-warning"
+                        value="honk_horn"
+                        onclick="sendVehicleCommand(this.value)"
+                      >
+                        Honk Horn
+                      </button>
+                    </div>
+                  </div>
+                  <div id="command-result" class="mt-3 text-center"></div>
+                </div>
+              </div>
             </div>
 
             <!-- Status Section -->
@@ -111,6 +166,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
     <script src="./scripts.js"></script>
   </body>
 </html>
