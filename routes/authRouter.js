@@ -2,13 +2,13 @@
  *  authRouter.js
  *  Path: ~/FleetAPI_Dev/routes/
  */
-dotenv.config();
+
 import express from "express";
 import axios from "axios";
 import db from "../database/db.js";
 
 import dotenv from "dotenv";
-
+dotenv.config();
 const router = express.Router();
 
 router.get("/test", (req, res) => {

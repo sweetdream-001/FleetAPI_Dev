@@ -8,10 +8,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { v4 as uuidv4 } from "uuid";
 
-// Load private and public keys
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 export async function generateJWSToken(token, fields) {
   // 1. Load private key
   const privateKeyPath = path.join(__dirname, "./keys/private-key.pem");

@@ -2,20 +2,21 @@
  *  scripts.js
  *  Path: ~/FleetAPI_Dev/public
  */
-// Alert handling functions
-function showAlert(message, type = "success") {
-  const alertElement = document.getElementById("success-alert");
-  const messageElement = document.getElementById("alert-message");
-  if (alertElement && messageElement) {
-    messageElement.innerText = message;
-    alertElement.className = `alert alert-${type} alert-dismissible fade show`;
-    alertElement.style.display = "block";
-    setTimeout(() => {
-      alertElement.style.display = "none";
-    }, 3000);
-  }
-}
 
+// Replace showAlert function with showToast
+function showToast(message, type = "success") {
+  const backgroundColor = type === "success" ? "#28a745" : "#dc3545";
+
+  Toastify({
+    text: message,
+    duration: 3000,
+    gravity: "bottom",
+    position: "right",
+    background: backgroundColor,
+    stopOnFocus: true,
+    close: true,
+  }).showToast();
+}
 // Authentication functions
 async function authenticate() {
   window.location.href = "/auth";
@@ -171,7 +172,7 @@ async function sendVehicleCommand(command) {
   }
 }
 
-// Update getFirstVehicleVIN to use toast instead of prompt
+// Update getFirstVehicleVIN
 async function getFirstVehicleVIN() {
   try {
     const res = await fetch("/api/vehicles", { credentials: "include" });
@@ -184,25 +185,6 @@ async function getFirstVehicleVIN() {
   } catch (error) {
     showToast("Error fetching vehicle VIN", "error");
     throw error;
-  }
-}
-
-// Update configureTelemetry to use toast
-async function configureTelemetry() {
-  try {
-    const vin = await getFirstVehicleVIN();
-    const res = await fetch("/api/telemetry/configure", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ vin }),
-    });
-    const data = await res.json();
-    console.log("Telemetry configuration response:", data);
-    showToast("Telemetry configured successfully");
-  } catch (error) {
-    console.error("Error configuring telemetry:", error);
-    showToast("Failed to configure telemetry", "error");
   }
 }
 
@@ -220,7 +202,9 @@ function hideAuthenticatedUI() {
   document.getElementById("auth-ui").style.display = "none";
 }
 
-//
+// To do get fleet status
+// To do Telemetry configuration
+
 async function fetchFleetStatus() {
   try {
     const res = await fetch("/api/vehicles/fleetstatus", {
@@ -287,17 +271,58 @@ async function fetchFleetStatus() {
   }
 }
 
-// Replace showAlert function with showToast
-function showToast(message, type = "success") {
-  const backgroundColor = type === "success" ? "#28a745" : "#dc3545";
+// Update configureTelemetry to use toast
+// async function configureTelemetry() {
+//   try {
+//     const vin = await getFirstVehicleVIN();
+//     const res = await fetch("/api/telemetry/configure", {
+//       method: "POST",
+//       credentials: "include",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ vin }),
+//     });
+//     const data = await res.json();
+//     console.log("Telemetry configuration response:", data);
+//     showToast("Telemetry configured successfully");
+//   } catch (error) {
+//     console.error("Error configuring telemetry:", error);
+//     showToast("Failed to configure telemetry", "error");
+//   }
+// }
 
-  Toastify({
-    text: message,
-    duration: 3000,
-    gravity: "bottom",
-    position: "right",
-    background: backgroundColor,
-    stopOnFocus: true,
-    close: true,
-  }).showToast();
+async function configureTelemetry() {
+  try {
+    const vin = await getFirstVehicleVIN();
+    const response = await fetch("/api/telemetry/configureTelemetry", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vin }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      showToast("Telemetry configured successfully!", "success");
+      console.log("VCP Telemetry Configuration:", result);
+    } else {
+      showToast("Telemetry configuration failed.", "error");
+    }
+  } catch (error) {
+    console.error("Telemetry Configuration Error:", error);
+    showToast("Error configuring telemetry", "error");
+  }
+}
+
+async function statusTelemetry() {
+  try {
+    const vin = await getFirstVehicleVIN();
+    const response = await fetch(`/api/telemetry/configureStatus/${vin}`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const data = response.json();
+    console.log(data);
+  } catch (error) {
+    console.log(error);
+  }
 }

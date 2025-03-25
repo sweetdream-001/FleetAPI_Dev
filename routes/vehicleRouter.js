@@ -2,11 +2,11 @@
  *  vehicleRouter.js
  *  Path: ~/FleetAPI_Dev/routes/
  */
-dotenv.config();
+
 import express from "express";
 import vehicleService from "../services/vehicleService.js";
 import dotenv from "dotenv";
-
+dotenv.config();
 const router = express.Router();
 //test router
 // router.get("/", (req, res) => {
@@ -18,7 +18,6 @@ router.get("/", async (req, res) => {
   try {
     const accessToken = req.cookies.access_token;
     const vehicles = await vehicleService.fetchVehicleData(accessToken);
-
     // Update signing status for each vehicle
     for (const vehicle of vehicles) {
       await vehicleService.updateVehicleSigningStatus(vehicle.vin, accessToken);

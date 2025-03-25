@@ -2,13 +2,13 @@
  *  vehicleCommand.js
  *  Path: ~/FleetAPI_Dev/routes/
  */
-dotenv.config();
+
 import express from "express";
 import axios from "axios";
 import https from "https";
 
 import dotenv from "dotenv";
-
+dotenv.config();
 const router = express.Router();
 
 //test router
