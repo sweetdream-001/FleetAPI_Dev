@@ -22,7 +22,7 @@ async function authenticate() {
 }
 
 async function pairKey() {
-  window.location.href = "/pairKey";
+  window.location.href = "/auth/pairKey";
 }
 
 async function refreshToken() {
@@ -159,8 +159,12 @@ async function sendVehicleCommand(command) {
       }),
     });
 
-    const result = await response.json();
-    showToast(`Command ${command} executed successfully`);
+    // const result = await response.json();
+    if (response.status === 200) {
+      showToast(`Command ${command} executed successfully`, "success");
+    } else {
+      showToast(`Failed to execute command: ${command}`, "error");
+    }
   } catch (error) {
     console.error("Error sending command:", error);
     showToast(`Failed to execute command: ${command}`, "error");
@@ -219,7 +223,7 @@ function hideAuthenticatedUI() {
 //
 async function fetchFleetStatus() {
   try {
-    const res = await fetch("/api/fleetstatus", {
+    const res = await fetch("/api/vehicles/fleetstatus", {
       credentials: "include",
     });
     const vehicles = await res.json();
@@ -292,7 +296,7 @@ function showToast(message, type = "success") {
     duration: 3000,
     gravity: "bottom",
     position: "right",
-    backgroundColor: backgroundColor,
+    background: backgroundColor,
     stopOnFocus: true,
     close: true,
   }).showToast();

@@ -13,10 +13,10 @@ import dotenv from "dotenv";
 import { spawn } from "child_process";
 import path from "path";
 
+import authRouter from "./routes/authRouter.js";
 import vehicleCommand from "./routes/vehicleCommand.js";
+import vehicleRouter from "./routes/vehicleRouter.js";
 import telemetryRouter from "./routes/telemetry.js";
-import db from "./database/db.js";
-import vehicleService from "./services/vehicleService.js";
 
 dotenv.config();
 const app = express();
@@ -30,189 +30,21 @@ app.use(cookieParser());
 const accessTokenStore = {};
 
 // // Generate and serve the public key
-// const keys = generateKeyPair();
 app.get("/test", (req, res) => {
   res.json({ message: "Welcome to the Fleet API" });
 });
-// Authorization Endpoint
-app.get("/auth", (req, res) => {
-  const authUrl = `${process.env.TESLA_AUTH_URL}?&client_id=${process.env.TESLA_CLIENT_ID}&locale=en-US&prompt=login&redirect_uri=${process.env.TESLA_REDIRECT_URI}&response_type=code&scope=openid%20vehicle_device_data%20vehicle_cmds%20offline_access&state=${process.env.STATE}`;
-  res.redirect(authUrl);
-});
 
-// Authorization Endpoint
-app.get("/pairKey", (req, res) => {
-  const keyUrl = `https://tesla.com/_ak/${process.env.DOMAIN}`;
-  res.redirect(keyUrl);
-});
-
-// Callback handler
-app.get("/auth/callback", async (req, res) => {
-  try {
-    const { code } = req.query;
-
-    // Exchange code for tokens
-    const response = await axios.post(`${process.env.TESLA_TOKEN_URL}`, {
-      grant_type: "authorization_code",
-      client_id: process.env.TESLA_CLIENT_ID,
-      client_secret: process.env.TESLA_CLIENT_SECRET,
-      code,
-      redirect_uri: process.env.TESLA_REDIRECT_URI,
-    });
-
-    // Decode and store tokens
-
-    const { access_token, refresh_token, expires_in } = response.data;
-    const decoded = jwt.decode(access_token);
-    const userId = decoded.sub;
-
-    // Store access token in memory
-    accessTokenStore[userId] = {
-      access_token,
-      expires_at: Date.now() + expires_in * 1000,
-    };
-
-    // Store refresh token in database
-    await db.saveRefreshToken(
-      userId,
-      refresh_token,
-      new Date(Date.now() + expires_in * 1000)
-    );
-
-    // Set refresh token in secure cookie
-    res.cookie("refreshToken", refresh_token, {
-      httpOnly: false, // Prevent JavaScript access
-      secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "strict", // Protect against CSRF attacks
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    res.cookie("access_token", access_token, {
-      httpOnly: false, // Prevent JavaScript access
-      secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "strict", // Protect against CSRF attacks
-      maxAge: 8 * 60 * 60 * 1000, // 8 hours
-    });
-    // res.send('Authentication successful! You can close this window.');
-    // In the callback handler, after successful authentication
-    // res.sendFile(path.join(__dirname, 'public', 'vehicles.html'));
-    // Redirect to the vehicles page
-    res.redirect("/index.html");
-  } catch (error) {
-    console.error("Auth error:", error.response.data);
-    res.status(500).send("Authentication failed");
-  }
-});
-
-// Token Refresh Endpoint
-app.post("/auth/refresh", async (req, res) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-
-    if (!refreshToken) {
-      return res.status(401).send("Refresh token missing");
-    }
-
-    const response = await axios.post(`${process.env.TESLA_TOKEN_URL}`, {
-      grant_type: "refresh_token",
-      client_id: process.env.TESLA_CLIENT_ID,
-      client_secret: process.env.TESLA_CLIENT_SECRET,
-      refresh_token: refreshToken,
-    });
-
-    const { access_token, refresh_token, expires_in } = response.data;
-    const decoded = jwt.decode(access_token);
-    const userId = decoded.sub;
-
-    // Update access token in memory
-    accessTokenStore[userId] = {
-      access_token,
-      expires_at: Date.now() + expires_in * 1000,
-    };
-
-    // Update refresh token in database
-    await db.updateRefreshToken(
-      userId,
-      refresh_token,
-      new Date(Date.now() + expires_in * 1000)
-    );
-
-    // Set new refresh token in secure cookie
-    res.cookie("refreshToken", refresh_token, {
-      httpOnly: false, // Prevent JavaScript access
-      secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "strict", // Protect against CSRF attacks
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    res.cookie("access_token", access_token, {
-      httpOnly: false, // Prevent JavaScript access
-      secure: process.env.NODE_ENV === "production", // HTTPS only in production
-      sameSite: "strict", // Protect against CSRF attacks
-      maxAge: 8 * 60 * 60 * 1000, // 8 hours
-    });
-
-    res.json({ access_token });
-  } catch (error) {
-    console.error("Refresh error:", error.response.data);
-    res.status(401).send("Token refresh failed");
-  }
-});
-
-// Logout Endpoint
-app.post("/auth/logout", (req, res) => {
-  res.clearCookie("refreshToken"); // Remove the cookie
-  res.clearCookie("access_token"); // Remove the cookie
-  res.status(200).send("Logged out successfully");
-});
-
-//GET vehicles
-app.get("/api/vehicles", async (req, res) => {
-  try {
-    const accessToken = req.cookies.access_token;
-    const vehicles = await vehicleService.fetchVehicleData(accessToken);
-
-    // Update signing status for each vehicle
-    for (const vehicle of vehicles) {
-      await vehicleService.updateVehicleSigningStatus(vehicle.vin, accessToken);
-    }
-
-    res.json(vehicles);
-  } catch (error) {
-    console.error("Error fetching vehicles:", error);
-    res.status(500).json({ error: "Error fetching vehicle information" });
-  }
-});
-
+//routers
+app.use("/auth", authRouter);
 app.use("/api/telemetry", telemetryRouter);
+app.use("/api/vehicles", vehicleRouter);
 app.use("/api/vehicle/commands", vehicleCommand);
-// Serve the vehicles page
-//
-app.get("/api/fleetstatus", async (req, res) => {
-  try {
-    const accessToken = req.cookies.access_token;
-    const vehicles = await vehicleService.fetchVehicleData(accessToken);
-
-    for (const vehicle of vehicles) {
-      await vehicleService.updateVehicleSigningStatus(vehicle.vin, accessToken);
-      const fleetStatus = await vehicleService.fetchFleetStatus(
-        vehicle.vin,
-        accessToken
-      );
-      vehicle.fleet_status = fleetStatus;
-    }
-
-    res.json(vehicles);
-  } catch (error) {
-    console.error("Error fetching vehicles:", error);
-    res.status(500).json({ error: "Error fetching vehicle information" });
-  }
-});
 
 /**
- * vehicle proxy
+ *   Development Server
  */
-// Launch Tesla VCP subprocess
+
+//Launch Tesla VCP subprocess
 const vcpPath = path.join(
   process.cwd(),
   "./vehicle-command/cmd/tesla-http-proxy/tesla-http-proxy"
@@ -260,3 +92,92 @@ process.on("SIGTERM", () => {
     process.exit(0);
   });
 });
+/**
+ *
+ *    End of Development Server
+ */
+
+/**
+ *   Start Production Server
+ */
+// let vcpProcess;
+// let restartCount = 0;
+// const MAX_RESTARTS = 5; // avoid infinite restarts
+
+// function launchVCP() {
+//   const vcpPath = path.resolve(
+//     process.cwd(),
+//     "./vehicle-command/cmd/tesla-http-proxy/tesla-http-proxy"
+//   );
+//   const vcpArgs = [
+//     "-port",
+//     "4443",
+//     "-cert",
+//     path.resolve(
+//       process.cwd(),
+//       "./vehicle-command/cmd/tesla-http-proxy/cert.pem"
+//     ),
+//     "-tls-key",
+//     path.resolve(
+//       process.cwd(),
+//       "./vehicle-command/cmd/tesla-http-proxy/key.pem"
+//     ),
+//     "-key-file",
+//     path.resolve(process.cwd(), "./services/keys/private-key.pem"),
+//     "-disable-session-cache",
+//     "-verbose",
+//   ];
+
+//   vcpProcess = spawn(vcpPath, vcpArgs, { stdio: ["pipe", "pipe", "pipe"] });
+
+//   vcpProcess.stdout.on("data", (data) => {
+//     console.log(`[VCP stdout]: ${data}`);
+//   });
+
+//   vcpProcess.stderr.on("data", (data) => {
+//     console.error(`[VCP stderr]: ${data}`);
+//   });
+
+//   vcpProcess.on("error", (err) => {
+//     console.error("Failed to start VCP subprocess:", err);
+//   });
+
+//   vcpProcess.on("exit", (code, signal) => {
+//     console.warn(`VCP exited with code ${code}, signal ${signal}`);
+//     if (restartCount < MAX_RESTARTS) {
+//       console.log("Attempting to restart VCP...");
+//       restartCount += 1;
+//       setTimeout(launchVCP, 3000); // Restart after 3 sec delay
+//     } else {
+//       console.error("Maximum VCP restarts exceeded.");
+//     }
+//   });
+// }
+
+// const server = app.listen(process.env.PORT, () => {
+//   console.log(`Server running on port ${process.env.PORT}`);
+//   launchVCP(); // Start your VCP subprocess clearly here.
+// });
+
+// function shutdownServer() {
+//   console.log("Closing server...");
+//   server.close(() => {
+//     console.log("Server closed.");
+//     if (vcpProcess) {
+//       vcpProcess.kill();
+//       console.log("VCP subprocess killed.");
+//     }
+//     process.exit(0);
+//   });
+// }
+
+// process.on("SIGTERM", shutdownServer);
+// process.on("SIGINT", shutdownServer);
+// process.on("uncaughtException", (err) => {
+//   console.error("Uncaught Exception:", err);
+//   shutdownServer();
+// });
+
+/**
+ *  End of production server
+ */
