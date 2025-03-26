@@ -18,6 +18,10 @@
     />
     <link
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
       type="text/css"
       href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
     />
@@ -67,11 +71,17 @@
             <div class="account-section">
               <div class="control-card">
                 <div class="btn-group">
-                  <button class="btn btn-secondary" onclick="refreshToken()">
-                    <i class="fas fa-sync mr-2"></i>Refresh Token
+                  <button
+                    class="btn btn-tesla btn-tesla-info"
+                    onclick="refreshToken()"
+                  >
+                    <i class="fas fa-sync"></i>Refresh Token
                   </button>
-                  <button class="btn btn-danger" onclick="logout()">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                  <button
+                    class="btn btn-tesla btn-tesla-danger"
+                    onclick="logout()"
+                  >
+                    <i class="fas fa-sign-out-alt"></i>Logout
                   </button>
                 </div>
               </div>
@@ -83,19 +93,20 @@
                   <h4 class="mb-4">Vehicle Configurations</h4>
                   <div class="btn-group-vertical d-flex">
                     <div class="btn-group">
-                      <button class="btn btn-primary" onclick="pairKey()">
-                        <i class="fas fa-key mr-2"></i>KeyPair
-                      </button>
-                      <button class="btn btn-info" onclick="statusTelemetry()">
-                        <i class="fas fa-satellite-dish mr-2"></i>Telemetry
-                        Status
+                      <button class="btn btn-tesla" onclick="pairKey()">
+                        <i class="fas fa-key"></i>KeyPair
                       </button>
                       <button
-                        class="btn btn-info"
+                        class="btn btn-tesla btn-tesla-info"
+                        onclick="statusTelemetry()"
+                      >
+                        <i class="fas fa-satellite-dish"></i>Telemetry Status
+                      </button>
+                      <button
+                        class="btn btn-tesla btn-tesla-info"
                         onclick="configureTelemetry()"
                       >
-                        <i class="fas fa-satellite-dish mr-2"></i>Enable
-                        Telemetry
+                        <i class="fas fa-satellite-dish"></i>Enable Telemetry
                       </button>
                     </div>
                   </div>
@@ -109,34 +120,48 @@
                   <div class="btn-group-vertical d-flex">
                     <div class="btn-group">
                       <button
-                        class="btn btn-primary"
+                        class="btn btn-tesla"
                         value="door_lock"
-                        onclick="sendVehicleCommand(this.value)"
+                        onclick="sendVehicleCommand(this)"
                       >
-                        Lock Doors
+                        <i class="fas fa-lock"></i>Lock Doors
                       </button>
-
                       <button
-                        class="btn btn-secondary"
+                        class="btn btn-tesla"
                         value="door_unlock"
-                        onclick="sendVehicleCommand(this.value)"
+                        onclick="sendVehicleCommand(this)"
                       >
-                        Unlock Doors
+                        <i class="fas fa-lock-open"></i>Unlock Doors
                       </button>
                       <button
-                        class="btn btn-success"
+                        class="btn btn-tesla btn-tesla-info"
                         value="flash_lights"
-                        onclick="sendVehicleCommand(this.value)"
+                        onclick="sendVehicleCommand(this)"
                       >
-                        Flash Lights
+                        <i class="fas fa-lightbulb"></i>Flash Lights
                       </button>
-
                       <button
-                        class="btn btn-warning"
+                        class="btn btn-tesla btn-tesla-warning"
                         value="honk_horn"
-                        onclick="sendVehicleCommand(this.value)"
+                        onclick="sendVehicleCommand(this)"
                       >
-                        Honk Horn
+                        <i class="fas fa-bullhorn"></i>Honk Horn
+                      </button>
+                      <button
+                        class="btn btn-tesla btn-tesla-warning"
+                        value="actuate_trunk"
+                        data-params='{"which_trunk": "rear"}'
+                        onclick="sendVehicleCommand(this)"
+                      >
+                        <i class="fas fa-box"></i>Open Rear Trunk
+                      </button>
+                      <button
+                        class="btn btn-tesla btn-tesla-info"
+                        value="actuate_trunk"
+                        data-params='{"which_trunk": "front"}'
+                        onclick="sendVehicleCommand(this)"
+                      >
+                        <i class="fas fa-box-open"></i>Open Front Trunk
                       </button>
                     </div>
                   </div>
@@ -154,10 +179,10 @@
                   class="btn btn-info btn-lg"
                   onclick="fetchFleetStatus()"
                 >
-                  <i class="fas fa-cars mr-2"></i>Get Fleet Status
+                  <i class="fas fa-car-side mr-2"></i>Get Fleet Status
                 </button>
               </div>
-              <div id="fleet-status" class="mt-4"></div>
+              <div id="fleet-status" class="table-responsive mb-4"></div>
             </div>
           </div>
         </div>
@@ -168,7 +193,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
     <script
       type="text/javascript"
       src="https://cdn.jsdelivr.net/npm/toastify-js"

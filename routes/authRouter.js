@@ -2,7 +2,7 @@
  *  authRouter.js
  *  Path: ~/FleetAPI_Dev/routes/
  */
-
+import jwt from "jsonwebtoken";
 import express from "express";
 import axios from "axios";
 import db from "../database/db.js";
@@ -10,6 +10,9 @@ import db from "../database/db.js";
 import dotenv from "dotenv";
 dotenv.config();
 const router = express.Router();
+
+// Temporary storage for access tokens (use database in production)
+const accessTokenStore = {};
 
 router.get("/test", (req, res) => {
   res.json({ message: "authRouter works!" });
@@ -40,7 +43,6 @@ router.get("/callback", async (req, res) => {
       code,
       redirect_uri: process.env.TESLA_REDIRECT_URI,
     });
-
     // Decode and store tokens
 
     const { access_token, refresh_token, expires_in } = response.data;
@@ -86,7 +88,7 @@ router.get("/callback", async (req, res) => {
 });
 
 // Token Refresh Endpoint
-router.post("/auth/refresh", async (req, res) => {
+router.post("/refresh", async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
 
@@ -141,7 +143,7 @@ router.post("/auth/refresh", async (req, res) => {
 });
 
 // Logout Endpoint
-router.post("/auth/logout", (req, res) => {
+router.post("/logout", (req, res) => {
   res.clearCookie("refreshToken"); // Remove the cookie
   res.clearCookie("access_token"); // Remove the cookie
   res.status(200).send("Logged out successfully");

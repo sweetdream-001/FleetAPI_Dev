@@ -3,16 +3,18 @@
  *  Path: ~/FleetAPI_Dev/public
  */
 
-// Replace showAlert function with showToast
+// Replace showToast function with showToast
 function showToast(message, type = "success") {
   const backgroundColor = type === "success" ? "#28a745" : "#dc3545";
 
   Toastify({
     text: message,
     duration: 3000,
-    gravity: "bottom",
+    gravity: "top",
     position: "right",
-    background: backgroundColor,
+    style: {
+      background: backgroundColor,
+    },
     stopOnFocus: true,
     close: true,
   }).showToast();
@@ -34,16 +36,16 @@ async function refreshToken() {
     });
     if (response.ok) {
       const data = await response.json();
-      showAlert("Token refreshed successfully");
+      showToast("Token refreshed successfully");
       console.log("New access token:", data.access_token);
     } else {
       hideAuthenticatedUI();
-      showAlert("Failed to refresh token", "danger");
+      showToast("Failed to refresh token", "danger");
     }
   } catch (error) {
     hideAuthenticatedUI();
     console.error("Error refreshing token:", error);
-    showAlert("Error refreshing token", "danger");
+    showToast("Error refreshing token", "danger");
   }
 }
 
@@ -55,13 +57,13 @@ async function logout() {
     });
     if (response.ok) {
       hideAuthenticatedUI();
-      showAlert("Logged out successfully");
+      showToast("Logged out successfully");
     } else {
-      showAlert("Failed to log out", "danger");
+      showToast("Failed to log out", "danger");
     }
   } catch (error) {
     console.error("Error logging out:", error);
-    showAlert("Error logging out", "danger");
+    showToast("Error logging out", "danger");
   }
 }
 
@@ -77,11 +79,11 @@ async function fetchVehicleStatus() {
       const data = await response.json();
       displayVehicleTable(data);
     } else {
-      showAlert("Failed to fetch vehicle status", "danger");
+      showToast("Failed to fetch vehicle status", "danger");
     }
   } catch (error) {
     console.error("Error fetching vehicle status:", error);
-    showAlert("Error fetching vehicle status", "danger");
+    showToast("Error fetching vehicle status", "danger");
   }
 }
 
@@ -148,6 +150,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function sendVehicleCommand(command) {
   try {
+    let params = {};
+    const rawParams = command.getAttribute("data-params");
+    if (rawParams) {
+      try {
+        params = JSON.parse(rawParams);
+      } catch (error) {
+        showToast(error);
+      }
+    }
+
     const vin = await getFirstVehicleVIN();
     const response = await fetch("/api/vehicle/commands", {
       method: "POST",
@@ -155,20 +167,20 @@ async function sendVehicleCommand(command) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         vin: vin,
-        command: command,
-        parameters: {},
+        command: command.value,
+        parameters: params,
       }),
     });
 
     // const result = await response.json();
     if (response.status === 200) {
-      showToast(`Command ${command} executed successfully`, "success");
+      showToast(`Command ${command.value} executed successfully`, "success");
     } else {
-      showToast(`Failed to execute command: ${command}`, "error");
+      showToast(`Failed to execute command: ${command.value}`, "error");
     }
   } catch (error) {
     console.error("Error sending command:", error);
-    showToast(`Failed to execute command: ${command}`, "error");
+    showToast(`Failed to execute command: ${command.value}`, "error");
   }
 }
 
@@ -214,7 +226,7 @@ async function fetchFleetStatus() {
 
     let table = `
       <h4>Fleet Status</h4>
-      <table class="table table-bordered table-striped">
+      <table class="table table-striped table-hover">
         <thead>
           <tr>
             <th class="align-middle text-center text-center">VIN</th>
@@ -320,8 +332,12 @@ async function statusTelemetry() {
       method: "GET",
       credentials: "include",
     });
-    const data = response.json();
-    console.log(data);
+    const data = await response.json();
+    if (data.response.synced === true) {
+      showToast("Sycned!");
+    } else {
+      showToast("Not Synced!", "error");
+    }
   } catch (error) {
     console.log(error);
   }

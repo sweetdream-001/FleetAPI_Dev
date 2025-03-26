@@ -10,8 +10,6 @@ import https from "https";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { v4 as uuidv4 } from "uuid";
-import { generateJWSToken } from "../services/jwsGenerator.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -30,19 +28,22 @@ router.get("/", (req, res) => {
 });
 
 // create method
-router.get("/configureStatus", async (req, res) => {
-  const { vin } = req.params;
+router.get("/configureStatus/:vin", async (req, res) => {
+  const vin = req.params.vin;
   const accessToken = req.cookies.access_token;
-  console.log(
-    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ /api/telemetry/configureStatus @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", vin
-  );
+
   try {
     const response = await axios.get(
       `${process.env.BASE_URL}/api/1/vehicles/${vin}/fleet_telemetry_config`,
       {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
+
+    res.json(response.data);
   } catch (error) {
     console.log(error);
   }
@@ -88,6 +89,53 @@ router.post("/configureTelemetry", async (req, res) => {
     res.status(500).json({ error: "Telemetry configuration failed" });
   }
 });
+router.post("/webhook", express.json(), async (req, res) => {
+  console.log("📡 Incoming Telemetry:", req.body); // ✅ Key log
+  res.status(200).send("OK");
+});
+//test streaming
+
+// router.post("/webhook", express.json(), (req, res) => {
+//   const vin = req.get("X-Tesla-Vin");
+//   const signature = req.get("X-Tesla-Signature");
+//   const timestamp = req.get("X-Tesla-Timestamp");
+//   const rawBody = JSON.stringify(req.body);
+//   const signedPayload = `${timestamp}.${rawBody}`;
+
+//   // TODO: Verify signature with your public key
+//   const publicKey = fs.readFileSync("../services/keys/public-key.pem");
+//   const isValid = crypto.verify(
+//     "sha256",
+//     Buffer.from(signedPayload),
+//     {
+//       key: publicKey,
+//       padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+//     },
+//     Buffer.from(signature, "base64")
+//   );
+
+//   if (!isValid) {
+//     console.error("Invalid signature. Rejecting request.");
+//     return res.status(403).send("Unauthorized");
+//   }
+
+//   // Store data
+//   // await db.saveTelemetryData({ vin, ...req.body });
+//   console.log(
+//     "######################################################################################"
+//   );
+//   console.log({ vin, ...req.body });
+//   console.log(
+//     "######################################################################################"
+//   );
+
+//   res.status(200).send("Telemetry received");
+// });
+
+/**
+ * Don't delete this part.
+ * This is Tesla Fleet Telemetry Config JWS method
+ */
 
 // router.post("/configure", async (req, res) => {
 //   const { vin } = req.body;

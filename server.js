@@ -26,9 +26,6 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(cookieParser());
 
-// Temporary storage for access tokens (use database in production)
-const accessTokenStore = {};
-
 // // Generate and serve the public key
 app.get("/test", (req, res) => {
   res.json({ message: "Welcome to the Fleet API" });
@@ -38,7 +35,7 @@ app.get("/test", (req, res) => {
 app.use("/auth", authRouter);
 app.use("/api/telemetry", telemetryRouter);
 app.use("/api/vehicles", vehicleRouter);
-app.use("/api/vehicle/commands", vehicleCommand);
+app.use("/api/vehicle", vehicleCommand);
 
 /**
  *   Development Server

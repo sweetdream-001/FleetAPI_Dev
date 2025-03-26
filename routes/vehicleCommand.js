@@ -16,26 +16,8 @@ router.get("/", (req, res) => {
   res.send("vehicleCommand route");
 });
 
-//GET vehicles
-router.get("/vehicles", async (req, res) => {
-  try {
-    const accessToken = req.cookies.access_token;
-    const vehicles = await vehicleService.fetchVehicleData(accessToken);
-
-    // Update signing status for each vehicle
-    for (const vehicle of vehicles) {
-      await vehicleService.updateVehicleSigningStatus(vehicle.vin, accessToken);
-    }
-
-    res.json(vehicles);
-  } catch (error) {
-    console.error("Error fetching vehicles:", error);
-    res.status(500).json({ error: "Error fetching vehicle information" });
-  }
-});
-
 //
-router.post("/", async (req, res) => {
+router.post("/commands", async (req, res) => {
   const { vin, command, parameters } = req.body;
   const accessToken = req.cookies.access_token;
 
