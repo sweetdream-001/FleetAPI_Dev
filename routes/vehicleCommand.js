@@ -40,4 +40,30 @@ router.post("/commands", async (req, res) => {
   }
 });
 
+router.get("/status/:vin", async (req, res) => {
+  const vin = req.params.vin;
+  const accessToken = req.cookies.access_token;
+
+  try {
+    const vcpResponse = await axios.get(
+      `https://localhost:4443/api/1/vehicles/${vin}/vehicle_data`,
+      parameters,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }), // Accept self-signed TLS cert (only dev!)
+      }
+    );
+    console.log(
+      "VCP response:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",
+      vcpResponse.data
+    );
+    res.json(vcpResponse.data);
+  } catch (error) {
+    console.error("VCP request error:", error.response?.data || error.message);
+    res.status(500).json({ error: error.response?.data || error.message });
+  }
+});
 export default router;

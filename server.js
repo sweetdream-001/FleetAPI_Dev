@@ -4,9 +4,7 @@
  */
 
 import express from "express";
-import axios from "axios";
 import cors from "cors";
-import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 
 import dotenv from "dotenv";
@@ -59,6 +57,19 @@ const vcpArgs = [
   "-verbose",
 ];
 
+// const vcpArgs = [
+//   "-port",
+//   "4443",
+//   "-cert",
+//   path.join(process.cwd(), "./routes/certs/fullchain.pem"),
+//   "-tls-key",
+//   path.join(process.cwd(), "./routes/certs/privkey.pem"),
+//   "-key-file",
+//   path.join(process.cwd(), "./services/keys/private-key.pem"),
+//   "-disable-session-cache",
+//   "-verbose",
+// ];
+
 const vcpProcess = spawn(vcpPath, vcpArgs, { stdio: ["pipe", "pipe", "pipe"] });
 
 vcpProcess.stdout.on("data", (data) => {
@@ -76,6 +87,21 @@ vcpProcess.on("error", (err) => {
 vcpProcess.on("close", (code) => {
   console.log(`VCP subprocess exited with code ${code}`);
 });
+
+// Node.js example using Express
+app.post(
+  "/vcp/",
+  express.raw({ type: "application/x-protobuf" }),
+  async (req, res) => {
+    const rawData = req;
+
+    // Decode Protobuf using vehicle_data.proto
+    // const message = VehicleTelemetry.decode(rawData); // use protobufjs or ts-proto
+
+    console.log("📡 Streaming data received:", req);
+    res.sendStatus(200);
+  }
+);
 
 // Start server
 const server = app.listen(process.env.PORT, () => {
@@ -178,3 +204,5 @@ process.on("SIGTERM", () => {
 /**
  *  End of production server
  */
+
+//

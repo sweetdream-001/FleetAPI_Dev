@@ -148,6 +148,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+async function VehicleStatus() {
+  try {
+    const vin = await getFirstVehicleVIN();
+    const response = await fetch(`/api/vehicle/status/${vin}`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const data = await response.json();
+    if (data.response.synced === true) {
+      showToast("OOOOOOOOOOOOOOOKKKKKKKKKKKKKKKK");
+    } else {
+      showToast("Not OK!", "error");
+    }
+  } catch (error) {
+    console.error("Error fetching vehicle status:", error);
+    showToast("Error fetching vehicle status", "danger");
+  }
+}
 async function sendVehicleCommand(command) {
   try {
     let params = {};
@@ -283,25 +301,6 @@ async function fetchFleetStatus() {
   }
 }
 
-// Update configureTelemetry to use toast
-// async function configureTelemetry() {
-//   try {
-//     const vin = await getFirstVehicleVIN();
-//     const res = await fetch("/api/telemetry/configure", {
-//       method: "POST",
-//       credentials: "include",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ vin }),
-//     });
-//     const data = await res.json();
-//     console.log("Telemetry configuration response:", data);
-//     showToast("Telemetry configured successfully");
-//   } catch (error) {
-//     console.error("Error configuring telemetry:", error);
-//     showToast("Failed to configure telemetry", "error");
-//   }
-// }
-
 async function configureTelemetry() {
   try {
     const vin = await getFirstVehicleVIN();
@@ -335,6 +334,43 @@ async function statusTelemetry() {
     const data = await response.json();
     if (data.response.synced === true) {
       showToast("Sycned!");
+    } else {
+      showToast("Not Synced!", "error");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function errorTelemetry() {
+  try {
+    const vin = await getFirstVehicleVIN();
+    const response = await fetch(`/api/telemetry/configureErrors/${vin}`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const data = await response.json();
+    console.log(data);
+    // if (data.response.synced === true) {
+    //   showToast("Sycned!");
+    // } else {
+    //   showToast("Not Synced!", "error");
+    // }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function configureDelete() {
+  try {
+    const vin = await getFirstVehicleVIN();
+    const response = await fetch(`/api/telemetry/configureDelete/${vin}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    const data = await response.json();
+    if (data.response.synced === true) {
+      showToast("Deleted!");
     } else {
       showToast("Not Synced!", "error");
     }

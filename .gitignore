@@ -7,3 +7,7 @@ dist/
 build/
 *.env         # Ignore environment configuration files
 .DS_Store     # Ignore macOS system fileskeys/private-key.*
+*.crt
+*.key
+*.pem
+*.p12
