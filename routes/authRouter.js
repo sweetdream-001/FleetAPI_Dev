@@ -20,7 +20,7 @@ router.get("/test", (req, res) => {
 
 // Authorization Endpoint
 router.get("/", (req, res) => {
-  const authUrl = `${process.env.TESLA_AUTH_URL}?&client_id=${process.env.TESLA_CLIENT_ID}&locale=en-US&prompt=login&redirect_uri=${process.env.TESLA_REDIRECT_URI}&response_type=code&scope=openid%20vehicle_device_data%20vehicle_cmds%20offline_access&state=${process.env.STATE}`;
+  const authUrl = `${process.env.TESLA_AUTH_URL}?&client_id=${process.env.TESLA_CLIENT_ID}&locale=en-US&prompt=login&redirect_uri=${process.env.TESLA_REDIRECT_URI}&response_type=code&scope=openid%20vehicle_device_data%20vehicle_location%20vehicle_cmds%20offline_access&state=${process.env.STATE}`;
   res.redirect(authUrl);
 });
 
