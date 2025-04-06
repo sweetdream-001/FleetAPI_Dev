@@ -9,13 +9,12 @@ build/
 *.env
 .DS_Store
 keys/private-key.*
-services/keys/
+/services/keys/
 *.crt
 *.key
 *.pem
 *.p12
 tesla-http-proxy
-/vehicle-command
 # SSH Keys
 id_rsa
 id_rsa.pub
