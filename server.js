@@ -1,49 +1,71 @@
 /**
- *    server.js file
- *    Path: ~/FleetAPI_Dev/server.js
+ * Tesla Fleet API Server
+ *
+ * Main application server that handles Tesla vehicle communication,
+ * authentication, and real-time vehicle status polling.
+ *
+ * @author Your Name
+ * @version 1.0.0
  */
 
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
 import dotenv from "dotenv";
 import { spawn } from "child_process";
 import path from "path";
 
+// Route imports
 import authRouter from "./routes/authRouter.js";
 import vehicleCommand from "./routes/vehicleCommand.js";
 import vehicleRouter from "./routes/vehicleRouter.js";
 import telemetryRouter from "./routes/telemetry.js";
+import vehicleStatusRouter from "./routes/vehicleStatusRouter.js";
 
+// Service imports
+import vehicleStatusPoller from "./services/vehicleStatusPoller.js";
+
+// Load environment variables
 dotenv.config();
+
+/**
+ * Express application instance
+ * @type {express.Application}
+ */
 const app = express();
 
-app.use(cors());
-app.use(express.static("public"));
-app.use(express.json());
-app.use(cookieParser());
+// Middleware Configuration
+app.use(cors()); // Enable CORS for all routes
+app.use(express.static("public")); // Serve static files
+app.use(express.json()); // Parse JSON payloads
+app.use(cookieParser()); // Parse cookies
 
-// // Generate and serve the public key
+/**
+ * Health check endpoint
+ * @route GET /test
+ * @returns {object} Status message
+ */
 app.get("/test", (req, res) => {
   res.json({ message: "Welcome to the Fleet API" });
 });
 
-//routers
-app.use("/auth", authRouter);
-app.use("/api/telemetry", telemetryRouter);
-app.use("/api/vehicles", vehicleRouter);
-app.use("/api/vehicle", vehicleCommand);
+// API Routes Configuration
+app.use("/auth", authRouter); // Authentication routes
+app.use("/api/telemetry", telemetryRouter); // Vehicle telemetry endpoints
+app.use("/api/vehicles", vehicleRouter); // Vehicle management
+app.use("/api/vehicle", vehicleCommand); // Vehicle commands
+app.use("/api/poller", vehicleStatusRouter); // Status polling control
 
 /**
- *   Development Server
+ * Tesla Vehicle Command Proxy (VCP) Configuration
+ * Handles secure communication with Tesla vehicles
  */
-
-//Launch Tesla VCP subprocess
 const vcpPath = path.join(
   process.cwd(),
   "./vehicle-command/cmd/tesla-http-proxy/tesla-http-proxy"
 );
+
+// VCP launch arguments
 const vcpArgs = [
   "-port",
   "4443",
@@ -57,152 +79,54 @@ const vcpArgs = [
   "-verbose",
 ];
 
-// const vcpArgs = [
-//   "-port",
-//   "4443",
-//   "-cert",
-//   path.join(process.cwd(), "./routes/certs/fullchain.pem"),
-//   "-tls-key",
-//   path.join(process.cwd(), "./routes/certs/privkey.pem"),
-//   "-key-file",
-//   path.join(process.cwd(), "./services/keys/private-key.pem"),
-//   "-disable-session-cache",
-//   "-verbose",
-// ];
-
+/**
+ * Spawn VCP subprocess and handle its lifecycle
+ * @type {ChildProcess}
+ */
 const vcpProcess = spawn(vcpPath, vcpArgs, { stdio: ["pipe", "pipe", "pipe"] });
 
-vcpProcess.stdout.on("data", (data) => {
-  console.log(`[VCP stdout]: ${data}`);
-});
+// VCP Process Event Handlers
+vcpProcess.stdout.on("data", (data) => console.log(`[VCP stdout]: ${data}`));
+vcpProcess.stderr.on("data", (data) => console.error(`[VCP stderr]: ${data}`));
+vcpProcess.on("error", (err) =>
+  console.error("Failed to start VCP subprocess:", err)
+);
+vcpProcess.on("close", (code) =>
+  console.log(`VCP subprocess exited with code ${code}`)
+);
 
-vcpProcess.stderr.on("data", (data) => {
-  console.error(`[VCP stderr]: ${data}`);
-});
-
-vcpProcess.on("error", (err) => {
-  console.error("Failed to start VCP subprocess:", err);
-});
-
-vcpProcess.on("close", (code) => {
-  console.log(`VCP subprocess exited with code ${code}`);
-});
-
-// Node.js example using Express
+/**
+ * Protobuf Data Handler
+ * Processes incoming vehicle telemetry data
+ * @route POST /vcp
+ */
 app.post(
   "/vcp/",
   express.raw({ type: "application/x-protobuf" }),
   async (req, res) => {
-    const rawData = req;
-
-    // Decode Protobuf using vehicle_data.proto
-    // const message = VehicleTelemetry.decode(rawData); // use protobufjs or ts-proto
-
     console.log("📡 Streaming data received:", req);
     res.sendStatus(200);
   }
 );
 
-// Start server
-const server = app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+/**
+ * Server Initialization
+ * Starts the Express server and vehicle status polling
+ */
+const server = app.listen(process.env.PORT, async () => {
+  console.log(`🚀 Server running on port ${process.env.PORT}`);
+  await vehicleStatusPoller.startPolling();
 });
 
+/**
+ * Graceful Shutdown Handler
+ * Ensures clean shutdown of server and background services
+ */
 process.on("SIGTERM", () => {
-  console.log("Closing server...");
+  console.log("📥 Closing server...");
   server.close(() => {
-    console.log("Server closed.");
+    console.log("✅ Server closed.");
+    vehicleStatusPoller.stopPolling();
     process.exit(0);
   });
 });
-/**
- *
- *    End of Development Server
- */
-
-/**
- *   Start Production Server
- */
-// let vcpProcess;
-// let restartCount = 0;
-// const MAX_RESTARTS = 5; // avoid infinite restarts
-
-// function launchVCP() {
-//   const vcpPath = path.resolve(
-//     process.cwd(),
-//     "./vehicle-command/cmd/tesla-http-proxy/tesla-http-proxy"
-//   );
-//   const vcpArgs = [
-//     "-port",
-//     "4443",
-//     "-cert",
-//     path.resolve(
-//       process.cwd(),
-//       "./vehicle-command/cmd/tesla-http-proxy/cert.pem"
-//     ),
-//     "-tls-key",
-//     path.resolve(
-//       process.cwd(),
-//       "./vehicle-command/cmd/tesla-http-proxy/key.pem"
-//     ),
-//     "-key-file",
-//     path.resolve(process.cwd(), "./services/keys/private-key.pem"),
-//     "-disable-session-cache",
-//     "-verbose",
-//   ];
-
-//   vcpProcess = spawn(vcpPath, vcpArgs, { stdio: ["pipe", "pipe", "pipe"] });
-
-//   vcpProcess.stdout.on("data", (data) => {
-//     console.log(`[VCP stdout]: ${data}`);
-//   });
-
-//   vcpProcess.stderr.on("data", (data) => {
-//     console.error(`[VCP stderr]: ${data}`);
-//   });
-
-//   vcpProcess.on("error", (err) => {
-//     console.error("Failed to start VCP subprocess:", err);
-//   });
-
-//   vcpProcess.on("exit", (code, signal) => {
-//     console.warn(`VCP exited with code ${code}, signal ${signal}`);
-//     if (restartCount < MAX_RESTARTS) {
-//       console.log("Attempting to restart VCP...");
-//       restartCount += 1;
-//       setTimeout(launchVCP, 3000); // Restart after 3 sec delay
-//     } else {
-//       console.error("Maximum VCP restarts exceeded.");
-//     }
-//   });
-// }
-
-// const server = app.listen(process.env.PORT, () => {
-//   console.log(`Server running on port ${process.env.PORT}`);
-//   launchVCP(); // Start your VCP subprocess clearly here.
-// });
-
-// function shutdownServer() {
-//   console.log("Closing server...");
-//   server.close(() => {
-//     console.log("Server closed.");
-//     if (vcpProcess) {
-//       vcpProcess.kill();
-//       console.log("VCP subprocess killed.");
-//     }
-//     process.exit(0);
-//   });
-// }
-
-// process.on("SIGTERM", shutdownServer);
-// process.on("SIGINT", shutdownServer);
-// process.on("uncaughtException", (err) => {
-//   console.error("Uncaught Exception:", err);
-//   shutdownServer();
-// });
-
-/**
- *  End of production server
- */
-
-//

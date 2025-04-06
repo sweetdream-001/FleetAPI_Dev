@@ -1,6 +1,5 @@
 # Node.js
 node_modules/
-utils/keys/private-key.*
 npm-debug.log
 yarn-error.log
 dist/

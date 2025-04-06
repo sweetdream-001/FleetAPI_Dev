@@ -55,13 +55,22 @@ router.get("/callback", async (req, res) => {
       expires_at: Date.now() + expires_in * 1000,
     };
 
-    // Store refresh token in database
-    await db.saveRefreshToken(
+    // // Store refresh token in database
+    // await db.saveRefreshToken(
+    //   userId,
+    //   refresh_token,
+    //   new Date(Date.now() + expires_in * 1000)
+    // );
+
+    // Update: use new saveTokens function
+    await db.saveTokens(
       userId,
+      access_token,
       refresh_token,
       new Date(Date.now() + expires_in * 1000)
     );
 
+    await db.setConfig("active_user_id", userId);
     // Set refresh token in secure cookie
     res.cookie("refreshToken", refresh_token, {
       httpOnly: false, // Prevent JavaScript access
@@ -113,13 +122,20 @@ router.post("/refresh", async (req, res) => {
       expires_at: Date.now() + expires_in * 1000,
     };
 
-    // Update refresh token in database
-    await db.updateRefreshToken(
+    // // In the refresh token handler
+    // await db.updateRefreshToken(
+    //   userId,
+    //   refresh_token,
+    //   new Date(Date.now() + expires_in * 1000)
+    // );
+
+    // Update: use new updateTokens function
+    await db.updateTokens(
       userId,
+      access_token,
       refresh_token,
       new Date(Date.now() + expires_in * 1000)
     );
-
     // Set new refresh token in secure cookie
     res.cookie("refreshToken", refresh_token, {
       httpOnly: false, // Prevent JavaScript access
@@ -143,9 +159,15 @@ router.post("/refresh", async (req, res) => {
 });
 
 // Logout Endpoint
-router.post("/logout", (req, res) => {
-  res.clearCookie("refreshToken"); // Remove the cookie
-  res.clearCookie("access_token"); // Remove the cookie
-  res.status(200).send("Logged out successfully");
+router.post("/logout", async (req, res) => {
+  try {
+    await db.setConfig("active_user_id", null);
+    res.clearCookie("refreshToken"); // Remove the cookie
+    res.clearCookie("access_token"); // Remove the cookie
+    res.status(200).send("Logged out successfully");
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ error: "Logout failed" });
+  }
 });
 export default router;

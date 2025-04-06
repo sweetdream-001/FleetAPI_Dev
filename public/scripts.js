@@ -37,7 +37,6 @@ async function refreshToken() {
     if (response.ok) {
       const data = await response.json();
       showToast("Token refreshed successfully");
-      console.log("New access token:", data.access_token);
     } else {
       hideAuthenticatedUI();
       showToast("Failed to refresh token", "danger");
@@ -157,9 +156,9 @@ async function VehicleStatus() {
     });
     const data = await response.json();
     if (data.response.synced === true) {
-      showToast("OOOOOOOOOOOOOOOKKKKKKKKKKKKKKKK");
+      showToast("OK");
     } else {
-      showToast("Not OK!", "error");
+      showToast("Not!", "error");
     }
   } catch (error) {
     console.error("Error fetching vehicle status:", error);
@@ -350,12 +349,11 @@ async function errorTelemetry() {
       credentials: "include",
     });
     const data = await response.json();
-    console.log(data);
-    // if (data.response.synced === true) {
-    //   showToast("Sycned!");
-    // } else {
-    //   showToast("Not Synced!", "error");
-    // }
+    if (data.response.synced === true) {
+      showToast("Success!");
+    } else {
+      showToast("Failed!", "error");
+    }
   } catch (error) {
     console.log(error);
   }
