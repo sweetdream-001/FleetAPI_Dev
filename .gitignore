@@ -4,9 +4,20 @@ npm-debug.log
 yarn-error.log
 dist/
 build/
-*.env         # Ignore environment configuration files
-.DS_Store     # Ignore macOS system fileskeys/private-key.*
+
+# Security
+*.env
+.DS_Store
+keys/private-key.*
+services/keys/
 *.crt
 *.key
 *.pem
 *.p12
+tesla-http-proxy
+/vehicle-command
+# SSH Keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
